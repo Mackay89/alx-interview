@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-These module is for canUnlockAll method.
+This module is for canUnlockAll method.
 """
 
 
@@ -28,4 +28,3 @@ def canUnlockAll(boxes):
             return False
 
     return True
-
