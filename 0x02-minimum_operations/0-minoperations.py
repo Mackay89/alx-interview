@@ -3,6 +3,7 @@
 This module contains the function minOperations.
 """
 
+
 def minOperations(n: int) -> int:
     """
     Calculate the fewest number of operations needed to result in exactly n H characters.
