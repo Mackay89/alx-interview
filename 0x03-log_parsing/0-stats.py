@@ -1,47 +1,42 @@
 #!/usr/bin/python3
 import sys
+import signal
+import re
+from collections import defaultdict
 
-def parse_line(line):
-    """Parse a single line of log and return file size and status code."""
-    try:
-        parts = line.split()
-        if len(parts) != 7:
-            return None, None
-        file_size = int(parts[-1])
-        status_code = int(parts[-2])
+# Initialize data structures
+status_codes = defaultdict(int)
+total_size = 0
+line_count = 0
+
+def signal_handler(sig, frame):
+    print_stats()
+    sys.exit(0)
+
+def print_stats():
+    print(f"File size: {total_size}")
+    for code in sorted(status_codes.keys()):
+        print(f"{code}: {status_codes[code]}")
+
+def process_line(line):
+    global total_size, line_count
+    pattern = r'(\d+\.\d+\.\d+\.\d+) - \[(.*)\] "GET /projects/260 HTTP/1.1" (\d+) (\d+)'
+    match = re.match(pattern, line)
+    if match:
+        status_code = int(match.group(3))
+        file_size = int(match.group(4))
         if status_code in {200, 301, 400, 401, 403, 404, 405, 500}:
-            return file_size, status_code
-    except ValueError:
-        return None, None
-    return None, None
-
-def print_statistics(file_size_total, status_code_count):
-    """Print the statistics in the required format."""
-    print(f"File size: {file_size_total}")
-    for status_code in sorted(status_code_count.keys()):
-        if status_code_count[status_code] > 0:
-            print(f"{status_code}: {status_code_count[status_code]}")
-
-def main():
-    file_size_total = 0
-    status_code_count = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
-    line_count = 0
-    
-    try:
-        for line in sys.stdin:
-            file_size, status_code = parse_line(line)
-            if file_size is not None and status_code is not None:
-                file_size_total += file_size
-                status_code_count[status_code] += 1
-            line_count += 1
-
-            if line_count % 10 == 0:
-                print_statistics(file_size_total, status_code_count)
-                file_size_total = 0
-                status_code_count = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
-    except KeyboardInterrupt:
-        print_statistics(file_size_total, status_code_count)
+            status_codes[status_code] += 1
+            total_size += file_size
+        line_count += 1
+        if line_count % 10 == 0:
+            print_stats()
 
 if __name__ == "__main__":
-    main()
+    signal.signal(signal.SIGINT, signal_handler)
+    try:
+        for line in sys.stdin:
+            process_line(line)
+    except KeyboardInterrupt:
+        print_stats()
 
