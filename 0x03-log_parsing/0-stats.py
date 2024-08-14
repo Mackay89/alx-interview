@@ -1,41 +1,46 @@
 #!/usr/bin/python3
 import sys
-import signal
-from collections import defaultdict
 
-def print_stats(total_file_size, status_counts):
-    print(f"File size: {total_file_size}")
-    for status_code in sorted(status_counts):
-        print(f"{status_code}: {status_counts[status_code]}")
+def parse_line(line):
+    """Parse a single line of log and return file size and status code."""
+    try:
+        parts = line.split()
+        if len(parts) < 6:
+            return None, None
+        file_size = int(parts[-1])
+        status_code = int(parts[-2])
+        if status_code in {200, 301, 400, 401, 403, 404, 405, 500}:
+            return file_size, status_code
+    except ValueError:
+        return None, None
+    return None, None
 
-def signal_handler(sig, frame):
-    print_stats(total_file_size, status_counts)
-    sys.exit(0)
+def print_statistics(file_size_total, status_code_count):
+    """Print the statistics in the required format."""
+    print(f"File size: {file_size_total}")
+    for status_code in sorted(status_code_count.keys()):
+        print(f"{status_code}: {status_code_count[status_code]}")
 
-signal.signal(signal.SIGINT, signal_handler)
+def main():
+    file_size_total = 0
+    status_code_count = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
+    line_count = 0
+    
+    try:
+        for line in sys.stdin:
+            file_size, status_code = parse_line(line)
+            if file_size is not None and status_code is not None:
+                file_size_total += file_size
+                status_code_count[status_code] += 1
+            line_count += 1
 
-total_file_size = 0
-status_counts = defaultdict(int)
-line_count = 0
+            if line_count % 10 == 0:
+                print_statistics(file_size_total, status_code_count)
+                file_size_total = 0
+                status_code_count = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
+    except KeyboardInterrupt:
+        print_statistics(file_size_total, status_code_count)
 
-for line in sys.stdin:
-    parts = line.split()
-    if len(parts) >= 7:
-        try:
-            # Extract the file size and status code from the line
-            file_size = int(parts[-1])
-            status_code = int(parts[-2])
-            if status_code in [200, 301, 400, 401, 403, 404, 405, 500]:
-                total_file_size += file_size
-                status_counts[status_code] += 1
-                line_count += 1
-
-                if line_count % 10 == 0:
-                    print_stats(total_file_size, status_counts)
-                    # Reset counts for the next batch of 10 lines
-                    total_file_size = 0
-                    status_counts = defaultdict(int)
-        except ValueError:
-            # Ignore lines with invalid file size or status code
-            continue
+if __name__ == "__main__":
+    main()
 
