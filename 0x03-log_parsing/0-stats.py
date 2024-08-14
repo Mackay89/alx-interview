@@ -5,7 +5,7 @@ def parse_line(line):
     """Parse a single line of log and return file size and status code."""
     try:
         parts = line.split()
-        if len(parts) < 6:
+        if len(parts) != 7:
             return None, None
         file_size = int(parts[-1])
         status_code = int(parts[-2])
@@ -19,7 +19,8 @@ def print_statistics(file_size_total, status_code_count):
     """Print the statistics in the required format."""
     print(f"File size: {file_size_total}")
     for status_code in sorted(status_code_count.keys()):
-        print(f"{status_code}: {status_code_count[status_code]}")
+        if status_code_count[status_code] > 0:
+            print(f"{status_code}: {status_code_count[status_code]}")
 
 def main():
     file_size_total = 0
