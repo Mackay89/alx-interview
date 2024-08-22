@@ -1,40 +1,40 @@
 #!/usr/bin/python3
-"""
-This module provides a method to validate UTF-8 encoding.
+"""UTF-8 validation module.
 """
 
 def validUTF8(data):
-    """
-    Determines if a given data set represents a valid UTF-8 encoding.
-    
+    """Checks if a given list of integers data set represents a valid UTF-8 encoding.
+
+    A character in UTF-8 can be 1 to 4 bytes long.
+    The data set can contain multiple characters.
+    The data will be represented by a list of integers.
+
     Args:
-        data (list): A list of integers representing bytes.
-    
+        data (list): A list of integers where each integer represents a byte
+        of the data.
+
     Returns:
         bool: True if data is a valid UTF-8 encoding, else False.
     """
     n_bytes = 0
 
     for num in data:
-        # Get the 8 least significant bits
-        byte = num & 0xFF
-
         if n_bytes == 0:
             # Determine the number of bytes in the UTF-8 character
-            if (byte >> 7) == 0:
-                # 1-byte character (ASCII), continue
+            if num >> 7 == 0:
+                # 1-byte character (ASCII)
                 continue
-            elif (byte >> 5) == 0b110:
+            elif num >> 5 == 0b110:
                 n_bytes = 1
-            elif (byte >> 4) == 0b1110:
+            elif num >> 4 == 0b1110:
                 n_bytes = 2
-            elif (byte >> 3) == 0b11110:
+            elif num >> 3 == 0b11110:
                 n_bytes = 3
             else:
                 return False
         else:
             # Check if the byte is a valid continuation byte (10xxxxxx)
-            if (byte >> 6) != 0b10:
+            if num >> 6 != 0b10:
                 return False
         n_bytes -= 1
 
