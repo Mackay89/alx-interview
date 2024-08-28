@@ -12,8 +12,11 @@ def is_safe(placed_queens, row, col):
     return True
 
 
-def solve_nqueens(n, row=0, placed_queens=[]):
+def solve_nqueens(n, row=0, placed_queens=None):
     '''Recursively find all solutions for the N-Queens problem'''
+    if placed_queens is None:
+        placed_queens = []
+
     if row == n:
         return [placed_queens[:]]
 
