@@ -1,36 +1,53 @@
 #!/usr/bin/node
 
-// Import the 'node-fetch' library using CommonJS syntax
-const fetch = require('node-fetch');
+// Import the 'request' library
+const request = require('request');
 
 // Define constant with the base URL of the Star Wars API
 const API_URL = 'https://swapi-api.alx-tools.com/api';
 
+// Check if the number of command line arguments is greater than 2
 if (process.argv.length > 2) {
   const filmId = process.argv[2];
 
-  (async () => {
+  // Make a request to the film resource for the specified film ID
+  request(`${API_URL}/films/${filmId}/`, (err, _, body) => {
+    // If an error occurred during the request, log the error
+    if (err) {
+      console.error(`Error fetching film data: ${err.message}`);
+      return;
+    }
+
     try {
-      // Make a request to the film resource for the specified film ID
-      const response = await fetch(`${API_URL}/films/${filmId}/`);
-      const data = await response.json();
-      const charactersURL = data.characters;
+      // Parse the response body to get the characters URL
+      const charactersURL = JSON.parse(body).characters;
 
       // Create an array of Promises that resolve with the names of the characters
-      const characterNames = await Promise.all(
-        charactersURL.map(async (url) => {
-          const res = await fetch(url);
-          const charData = await res.json();
-          return charData.name;
+      const charactersName = charactersURL.map(
+        url => new Promise((resolve, reject) => {
+          // Make a request to the character resource
+          request(url, (promiseErr, __, charactersReqBody) => {
+            // If an error occurred during the request, reject the Promise with the error
+            if (promiseErr) {
+              reject(`Error fetching character data: ${promiseErr.message}`);
+            }
+
+            // Resolve the Promise with the name of the character
+            resolve(JSON.parse(charactersReqBody).name);
+          });
         })
       );
 
-      // Log the names of the characters, separated by new lines
-      console.log(characterNames.join('\n'));
-    } catch (err) {
-      console.error('Error:', err.message);
+      // Wait for all Promises to resolve and log the names of the characters, separated by new lines
+      Promise.all(charactersName)
+        .then(names => console.log(names.join('\n')))
+        .catch(allErr => console.error(`Error resolving promises: ${allErr}`));
+
+    } catch (parseError) {
+      console.error(`Error parsing film data: ${parseError.message}`);
     }
-  })();
+  });
 } else {
   console.log('Please provide a film ID as a command-line argument.');
 }
+
