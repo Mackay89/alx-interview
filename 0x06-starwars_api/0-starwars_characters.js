@@ -23,21 +23,19 @@ if (process.argv.length > 2) {
       const charactersURL = JSON.parse(body).characters;
 
       // Create an array of Promises that resolve with the names of the characters
-      const charactersName = charactersURL.map(
-        url => new Promise((resolve, reject) => {
-          // Make a request to the character resource
-          request(url, (promiseErr, __, charactersReqBody) => {
-            // If an error occurred during the request, reject the Promise with the error
-            if (promiseErr) {
-              reject(`Error fetching character data: ${promiseErr.message}`);
-              return; // Ensure the promise stops executing after rejection
-            }
+      const charactersName = charactersURL.map(url => new Promise((resolve, reject) => {
+        // Make a request to the character resource
+        request(url, (promiseErr, __, charactersReqBody) => {
+          // If an error occurred during the request, reject the Promise with the error
+          if (promiseErr) {
+            reject(`Error fetching character data: ${promiseErr.message}`);
+            return; // Ensure the promise stops executing after rejection
+          }
 
-            // Resolve the Promise with the name of the character
-            resolve(JSON.parse(charactersReqBody).name);
-          });
-        })
-      );
+          // Resolve the Promise with the name of the character
+          resolve(JSON.parse(charactersReqBody).name);
+        });
+      }));
 
       // Wait for all Promises to resolve and log the names of the characters, separated by new lines
       Promise.all(charactersName)
@@ -51,4 +49,3 @@ if (process.argv.length > 2) {
 } else {
   console.log('Please provide a film ID as a command-line argument.');
 }
-
