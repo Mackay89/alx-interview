@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/node
 
 // Import the 'request' library
 import request from 'request';
@@ -6,7 +6,7 @@ import request from 'request';
 // Define constant with the base URL of the Star Wars API
 const API_URL = 'https://swapi-api.alx-tools.com/api';
 
-// Check if the number of command-line arguments is greater than 2
+// Check if the number of command line arguments is greater than 2
 if (process.argv.length > 2) {
   const filmId = process.argv[2];
 
@@ -29,23 +29,31 @@ if (process.argv.length > 2) {
           // If an error occurred during the request, reject the Promise with the error
           if (promiseErr) {
             reject(`Error fetching character data: ${promiseErr.message}`);
-            return; // Ensure the promise stops executing after rejection
+            return;
           }
-
-          // Resolve the Promise with the name of the character
-          resolve(JSON.parse(charactersReqBody).name);
+          
+          try {
+            // Parse the character response body
+            const characterName = JSON.parse(charactersReqBody).name;
+            resolve(characterName);
+          } catch (parseErr) {
+            reject(`Error parsing character data: ${parseErr.message}`);
+          }
         });
       }));
 
-      // Wait for all Promises to resolve and log the names of the characters, separated by new lines
+      // Wait for all Promises to resolve and then print the character names
       Promise.all(charactersName)
-        .then(names => console.log(names.join('\n')))
-        .catch(allErr => console.error(`Error resolving promises: ${allErr}`));
+        .then(names => {
+          console.log(names.join('\n'));
+        })
+        .catch(error => {
+          console.error(`Error in fetching character names: ${error}`);
+        });
 
-    } catch (parseError) {
-      console.error(`Error parsing film data: ${parseError.message}`);
+    } catch (parseErr) {
+      console.error(`Error parsing film data: ${parseErr.message}`);
     }
   });
-} else {
-  console.log('Please provide a film ID as a command-line argument.');
 }
+
