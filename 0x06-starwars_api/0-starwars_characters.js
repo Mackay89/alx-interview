@@ -26,7 +26,7 @@ if (process.argv.length > 2) {
         new Promise((resolve, reject) => {
           request(url, (promiseErr, __, charactersReqBody) => {
             if (promiseErr) {
-              reject(`Error fetching character data: ${promiseErr.message}`);
+              reject(new Error(`Error fetching character data: ${promiseErr.message}`));
               return;
             }
 
@@ -34,7 +34,7 @@ if (process.argv.length > 2) {
               const characterName = JSON.parse(charactersReqBody).name;
               resolve(characterName);
             } catch (parseError) {
-              reject(`Error parsing character data: ${parseError.message}`);
+              reject(new Error(`Error parsing character data: ${parseError.message}`));
             }
           });
         })
@@ -44,7 +44,6 @@ if (process.argv.length > 2) {
       Promise.all(characterPromises)
         .then(names => console.log(names.join('\n')))
         .catch(promiseError => console.error(`Error in fetching character names: ${promiseError.message}`));
-
     } catch (parseError) {
       console.error(`Error parsing film data: ${parseError.message}`);
     }
