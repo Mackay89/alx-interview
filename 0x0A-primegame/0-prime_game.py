@@ -8,10 +8,12 @@ def isWinner(x, nums):
 
     Args:
     x (int): The number of rounds to be played.
-    nums (list of int): A list of integers representing the upper limits for each round.
+    nums (list of int): A list of integers representing
+    the upper limits for each round.
 
     Returns:
-    str: Name of the player with the most wins, "Maria" or "Ben", or None if it's a tie.
+    str: Name of the player with the most wins, "Maria"
+    or "Ben", or None if it's a tie.
     """
     if not nums or x <= 0:
         return None
@@ -21,8 +23,7 @@ def isWinner(x, nums):
     ben = 0
     maria = 0
 
-    max_num = max(nums)
-    
+    max_num = ax(nums)
     # Sieve of Eratosthenes to mark prime numbers up to max_num
     sieve = [True] * (max_num + 1)
     sieve[0], sieve[1] = False, False  # 0 and 1 are not primes
@@ -48,4 +49,3 @@ def isWinner(x, nums):
     if maria > ben:
         return "Maria"
     return None
-
