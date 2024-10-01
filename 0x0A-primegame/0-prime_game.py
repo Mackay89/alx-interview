@@ -23,7 +23,7 @@ def isWinner(x, nums):
     ben = 0
     maria = 0
 
-    max_num = ax(nums)
+    max_num = max(nums)
     # Sieve of Eratosthenes to mark prime numbers up to max_num
     sieve = [True] * (max_num + 1)
     sieve[0], sieve[1] = False, False  # 0 and 1 are not primes
